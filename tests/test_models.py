@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
 
@@ -185,3 +185,46 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found.count(), count)
         for product in found:
             self.assertEqual(product.category, first_product_category)
+
+# Following are created to improve the Code Coverage
+    def test_models_datavalidation_exceptions(self):
+        """ It should test missing code lines from models.py """
+        # Instance 1 - Wrong type of data set for available field
+        product = ProductFactory()
+        product.create()
+        product.available = True
+        product_dic = product.serialize()
+        product_dic['available'] = "Hi"
+        product.update()
+        self.assertRaises(DataValidationError, product.deserialize, product_dic)
+        # Instance 2  - Empty dictionary set to call with deserialize
+        empty_dic = {}
+        self.assertRaises(DataValidationError, product.deserialize, empty_dic)
+        # Instance 3 - Type Error
+        list_dic = ["hi"]
+        self.assertRaises(DataValidationError, product.deserialize, list_dic)
+        # Instance 4 - Attribute Error
+        product1 = ProductFactory()
+        product1.create()
+        product_dic1 = product1.serialize()
+        product_dic1["category"] = "hi"
+        product1.update()
+        self.assertRaises(DataValidationError, product.deserialize, product_dic1)
+
+    def test_price_function(self):
+        """Tests the price functionality"""
+        product_batch = ProductFactory.create_batch(4)
+        for product in product_batch:
+            product.create()
+        first_product_price = product_batch[0].price
+        found = Product.find_by_price(first_product_price)
+        for prod in found:
+            self.assertEqual(prod.price, first_product_price)
+
+    def test_models_update_exceptions(self):
+        """ It should test missing code lines from models.py """
+        product = ProductFactory()
+        product.create()
+        product.id = None
+        product.description = "New Description to test exception"
+        self.assertRaises(DataValidationError, product.update)
