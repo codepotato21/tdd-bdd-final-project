@@ -28,6 +28,7 @@ import os
 import logging
 from decimal import Decimal
 from unittest import TestCase
+from urllib.parse import quote_plus
 from service import app
 from service.common import status
 from service.models import db, init_db, Product
@@ -176,7 +177,7 @@ class TestProductRoutes(TestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        logging.debug("data = %s", data)
+        # logging.debug("data = %s", data)
         return len(data)
 
     def test_get_product(self):
@@ -219,6 +220,50 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         new_count = self.get_product_count()
         self.assertEqual(count_initial - 1, new_count)
+
+    def test_list_all_products(self):
+        """ It should list all products added to database """
+        self._create_products(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+
+
+    def test_query_by_name(self):
+        """ It should query products by Name"""
+        products = self._create_products(5)
+        test_name = products[0].name
+        count = len([product for product in products if product.name == test_name])
+        response = self.client.get(
+            BASE_URL,  query_string=f"name={quote_plus(test_name)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), count)
+        for product in data:
+            self.assertEqual(product['name'], test_name)
+
+    def test_query_by_category(self):
+        """ It should query products by category """
+        products = self._create_products(10)
+        category = products[0].category
+        found = [product for product in products if product.category == category]
+        found_count = len(found)
+        logging.debug("Found Products [%d] %s", found_count, found)
+        response = self.client.get(
+            BASE_URL, query_string=f"category={category.name}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), found_count)
+        for product in data:
+            self.assertEqual(product['category'], category.name)
+
+
+
+
+
 
         
 

@@ -22,6 +22,7 @@ from flask import jsonify, request, abort
 from flask import url_for  # noqa: F401 pylint: disable=unused-import
 from service.models import Product
 from service.common import status  # HTTP Status Codes
+from service.models import Product, Category
 from . import app
 
 
@@ -100,6 +101,28 @@ def create_products():
 #
 # PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
 #
+@app.route('/products', methods=["GET"])
+def list_all_products():
+    """Returns a list of all products"""
+    app.logger.info("Request to list products...")
+    list_all = []
+    name = request.args.get("name")
+    category = request.args.get("category")
+    if name:
+        app.logger.info("Find by name: %s", name)
+        products = Product.find_by_name(name)
+
+    elif category:
+        app.logger.info("find by category: %s", category)
+        category_value = getattr(Category, category.upper())
+        products = Product.find_by_category(category_value)        
+
+    else:
+        app.logger.info("Find all")
+        products = Product.all()
+    product_list = [product.serialize() for product in products]
+    app.logger.info("The number of products returned in the list are:[%s]", len(product_list))
+    return product_list, status.HTTP_200_OK
 
 ######################################################################
 # R E A D   A   P R O D U C T
@@ -155,5 +178,8 @@ def delete_products(product_id):
     app.logger.info("Request to delete a product with id [%s]", product_id)
     product = Product.find(product_id)
     if product:
-        product.detete()
+        product.delete()
     return "", status.HTTP_204_NO_CONTENT
+
+
+
