@@ -173,7 +173,7 @@ class TestProductRoutes(TestCase):
 
     def get_product_count(self):
         """save the current number of products"""
-        response = self.client.get(f"{BASE_URL}"))
+        response = self.client.get(f"{BASE_URL}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         # logging.debug("data = %s", data)
