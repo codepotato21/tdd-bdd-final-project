@@ -206,7 +206,7 @@ class TestProductRoutes(TestCase):
         response = self.client.put(f"{BASE_URL}/{new_product['id']}", json=new_product)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_product = response.get_json()
-        self.assertEqual(updated_product["description"], "unknown")        
+        self.assertEqual(updated_product["description"], "unknown")
 
     def test_del_product(self):
         """ It should be able to delete a product """
@@ -228,7 +228,6 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 5)
-
 
     def test_query_by_name(self):
         """ It should query products by Name"""
@@ -274,12 +273,3 @@ class TestProductRoutes(TestCase):
         self.assertEqual(len(data), count)
         for product in data:
             self.assertEqual(product['available'], True)
-
-
-
-
-
-
-        
-
-
