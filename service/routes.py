@@ -117,7 +117,7 @@ def get_products(product_id):
     app.logger.info("Request to retrieve a product with id [%s]", product_id)
     product = Product.find(product_id)
     if not product:
-        abort(status.HTTP_404_NOT_FOUND, f"Product with {product_id} not found")
+        abort(status.HTTP_404_NOT_FOUND, f"Product with {product_id} was not found")
     app.logger.info("Returning Product: [%s]", product.name)
     return product.serialize(), status.HTTP_200_OK
 
@@ -128,6 +128,17 @@ def get_products(product_id):
 #
 # PLACE YOUR CODE TO UPDATE A PRODUCT HERE
 #
+@app.route("/products/<int:product_id>", methods=["PUT"])
+def updated_product(product_id):
+    """ It updates the product """
+    app.logger.info("Requst to update product with id [%s]", product_id)
+    check_content_type("application/json")
+    product = Product.find(product_id)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id {product_id} was not found.")
+    product.deserialize(request.get_json())
+    product.update()
+    return product.serialize(), status.HTTP_200_OK
 
 ######################################################################
 # D E L E T E   A   P R O D U C T
@@ -137,3 +148,4 @@ def get_products(product_id):
 #
 # PLACE YOUR CODE TO DELETE A PRODUCT HERE
 #
+
